@@ -1,0 +1,13 @@
+﻿position_id,position_name,description_url,position_weight
+POS001,JUNIOR CONSULTANT,https://talentdb.example.com/positions/junior-consultant,0.95
+POS002,CONSULTANT,https://talentdb.example.com/positions/consultant,1.00
+POS003,SENIOR CONSULTANT,https://talentdb.example.com/positions/senior-consultant,1.08
+POS004,TECHNICAL LEAD,https://talentdb.example.com/positions/technical-lead,1.15
+POS005,SOLUTION ARCHITECT,https://talentdb.example.com/positions/solution-architect,1.20
+POS006,PROJECT MANAGER,https://talentdb.example.com/positions/project-manager,1.18
+POS007,PROGRAM MANAGER,https://talentdb.example.com/positions/program-manager,1.25
+POS008,PRACTICE DIRECTOR,https://talentdb.example.com/positions/practice-director,1.35
+POS009,DATA ANALYST,https://talentdb.example.com/positions/data-analyst,1.02
+POS010,DATA ENGINEER,https://talentdb.example.com/positions/data-engineer,1.10
+POS011,CLOUD ENGINEER,https://talentdb.example.com/positions/cloud-engineer,1.12
+POS012,QA SPECIALIST,https://talentdb.example.com/positions/qa-specialist,1.03

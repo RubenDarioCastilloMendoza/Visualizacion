@@ -1,0 +1,1290 @@
+<MODEL name = "TalentDB"
+    types = "srdm"
+    operators = "srdm"
+    case-sensitive:"False"
+    author = "Felipe Ramírez"
+    created = "2026/03/07 13:00"
+    version = "1.0"
+    main="True">
+
+/*
+    Carga de Semarity Grounding Artefacts.
+*/
+
+GROUNDING
+    {
+        SGART "Semarity Core"
+            VERSION "1.0" BY "Aprenda";
+        SGART "Semarity Semantic Modifiers"
+            VERSION "1.0" BY "Aprenda";
+        SGART "Semarity Data Governance"
+            VERSION "1.0" BY "Mary Araiza"
+            ALIAS "DGov";
+        SGART "Semarity WindowsUI"
+            VERSION "2.0" BY "Francisco Salazar"
+            ALIAS "WUI";
+        SGART "Semarity Date Conversions"
+            VERSION "1.0" BY "Fede Figueroa"
+            ALIAS "DConv";
+    }
+
+/* Enumeraciones semánticas */
+
+REGEX
+    {
+        "posid":"^([A-Z]{2}[0-9]{3,6}[A-Z0-9]{1,2})$";
+        "ymonth":DConv.REGEX("%Y-%m");
+        "url":"^(?:([A-Za-z]+):)?(\/{0,3})([0-9.\-A-Za-z]+)
+            (?::(\d+))?(?:\/([^?#]*))?(?:\?([^#]*))?(?:#(.*))?$";
+        "email":"^([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$";
+        "rolid":"^([A-Z0-9]{4,10})$";
+        "money":"^([0-9]{1,10}\.[0-9]{1,2})$";
+        "empid":"^([0-9]{6})$";
+    }
+
+POSITIONS->POS =
+    *position_id
+        {str(10):identity}
+        @{REGEX:"posid";}
+        #{
+            LABEL:"Id del puesto:";
+            COLUMN-LABEL:"Id.";
+            ALIAS:["Id del puesto", "Clave del puesto"];
+        }
+        ##{"Clave que identifica a los puestos en la
+            organización."}
+        !{
+            WUI.CONTROL-ORDER:1;
+            WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+            WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+        } +
+    position_name
+        {str(50):description}
+        @{REGEX:"^([A-Z0-9\s]{5,50})$";}
+        #{
+            LABEL:"Nombre del puesto:";
+            COLUMN-LABEL:"Puesto";
+            ALIAS:["Puesto","Nombre del puesto","Posición",
+                 "Encargo"];
+        }
+        ##{"Nombre del puesto."}
+        !{
+            WUI.CONTROL-ORDER:2;
+            WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+            WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+        } +
+    description_url^
+        {str(100):description}
+        @{REGEX:"url";}
+        #{
+            LABEL:"Página del perfil de puesto:";
+            COLUMN-LABEL:"Perfil";
+            ALIAS:["Perfil","Página de perfil"];
+        }
+        ##{"URL de la página con la descripción del puesto."}
+        !{
+            WUI.CONTROL-ORDER:3;
+            WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+            WUI.DISPLAY-CONTROL-TYPE:"LINK";
+        } +
+    position_factor
+        {float(5,2):value}
+        @{
+            NON-NEGATIVE;
+            MIN-VALUE:0.5;
+            MAX-VALUE:2.0;
+            REGEX:"^([012]\.[0-9]{1,2})$";
+        }
+        #{
+            LABEL:"Factor de puesto:";
+            COLUMN-LABEL:"Fact.";
+            ALIAS:["Factor", "Factor de puesto",
+                "Factor de compensación"];
+        }
+        ##{"Factor de compensación aplicable
+            en función al puesto."}
+        !{
+            WUI.CONTROL-ORDER:4;
+            WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+            WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+        };
+    #{
+        TITLE:"Catálogo de puestos";
+        ALIAS:["Puestos","Posiciones","Encargos"];
+    }
+    ##{"Catálogo oficial de puestos de la organización.
+        El puesto puede provocar la variación de percepciones
+        incluso para personas desempeñando el mismo rol."}
+    !{
+        DESCRIPTION-FIELD:"position_name";
+        WUI.WINDOW-TYPE:"MODAL";
+        DGov.DATA-OWNER:"Dirección Administrativa";
+        DGov.DATA-STEWARD:"Recursos Humanos";
+        DGov.CLASSIFICATION:"Restricted";
+        DGov.LAST-UPDATE:"2024-01-01";
+        DGov.DATA-QUALITY:"Standard";
+        DGov.REGULATION:["GDPR","SOX"];
+    };;
+
+PERIODS->PER =
+    *year_month
+        {str(7):identity}
+        @{REGEX:"ymonth";}
+        #{
+            LABEL:"Año-mes (aaaa-mm):";
+            COLUMN-LABEL:"Año-mes";
+            ALIAS:["Mes","Periodo"];
+        }
+        ##{"Año y mes que identifican a un periodo laborable."} +
+        !{
+            WUI.CONTROL-ORDER:1;
+            WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+            WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+        } +
+    year<DConv.CONVERT([year_month],"%Y")>
+        {str(4):category}
+        @{REGEX:DConv.REGEX("%Y");}
+        #{
+            LABEL:"Año (aaaa):";
+            COLUMN-LABEL:"Año";
+            ALIAS:["Año","Ejercicio"];
+        }
+        ##{"Año del periodo."} +
+        !{
+            WUI.CONTROL-ORDER:2;
+            WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+            WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+        } +
+    month_name<DConv.CONVERT([year_month],"%B")>
+        {str(10):category}
+        @{REGEX:DConv.REGEX("%B");}
+        #{
+            LABEL:"Nombre del mes:";
+            COLUMN-LABEL:"Mes";
+            ALIAS:["Nombre del mes"];
+        }
+        ##{"Nombre del mes del periodo."} +
+        !{
+            WUI.CONTROL-ORDER:3;
+            WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+            WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+        } +
+    two_month_period<DConv.CONVERT([year_month],"%Y-%2m")>
+        {str(7):category}
+        @{REGEX:DConv.REGEX("%Y-%2m");}
+        #{
+            LABEL:"Bimestre:";
+            COLUMN-LABEL:"Bimestre";
+            ALIAS:["Bimestre"];
+        }
+        ##{"Bimestre al que corresponde el periodo."} +
+        !{
+            WUI.CONTROL-ORDER:4;
+            WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+            WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+        } +
+    quarter<DConv.CONVERT([year_month],"%Y-%3m")>
+        {str(7):category}
+        @{REGEX:DConv.REGEX("%Y-%3m");}
+        #{
+            LABEL:"Trimestre:";
+            COLUMN-LABEL:"Trimestre";
+            ALIAS:["Trimestre"];
+        }
+        ##{"Trimestre al que corresponde el periodo."} +
+        !{
+            WUI.CONTROL-ORDER:5;
+            WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+            WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+        } +
+    four_month_period<DConv.CONVERT([year_month],"%Y-%4m")>
+        {str(7):category}
+        @{REGEX:DConv.REGEX("%Y-%4m");}
+        #{
+            LABEL:"Tetramestre:";
+            COLUMN-LABEL:"Tetramestre";
+            ALIAS:["Tetramestre"];
+        }
+        ##{"Tetramestre al que corresponde el periodo."} +
+        !{
+            WUI.CONTROL-ORDER:6;
+            WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+            WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+        } +
+    semester<DConv.CONVERT([year_month],"%Y-%6m")>
+        {str(7):category}
+        @{REGEX:DConv.REGEX("%Y-%6m");}
+        #{
+            LABEL:"Semestre:";
+            COLUMN-LABEL:"Semestre";
+            ALIAS:["Semestre"];
+        }
+        ##{"Semestre al que corresponde el periodo."} +
+        !{
+            WUI.CONTROL-ORDER:7;
+            WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+            WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+        };
+    #{
+        TITLE:"Categorías temporales";
+        ALIAS:["Periodos"];
+    }
+    ##{"Tabla de periodos y segmentos temporales. A
+        partir de periodos mensuales, se generan las
+        equivalencias categóricas que pueden ser usadas
+        para labores de analítica."}
+    !{
+        DConv.LANGUAGE:"US-EN";
+        DESCRIPTION-FIELD:"year_month";
+        WUI.WINDOW-TYPE:"MODAL";
+        DGov.DATA-OWNER:"Dirección Administrativa";
+        DGov.DATA-STEWARD:"Sistemas";
+        DGov.CLASSIFICATION:"Internal";
+        DGov.LAST-UPDATE:"2024-01-01";
+        DGov.DATA-QUALITY:"Standard";
+    };;
+
+ROLES->ROL =
+    *role_id
+        {str(10):identity}
+        @{REGEX:"rolid";}
+        #{
+            LABEL:"Id del rol:";
+            COLUMN-LABEL:"Id.";
+            ALIAS:["Id del rol", "Clave del rol"];
+        }
+        ##{"Clave que identifica a los roles en
+           la organización. Los roles representan un
+           perfil profesional que los clientes pueden
+           contratar por horas."}
+        !{
+            WUI.CONTROL-ORDER:1;
+            WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+            WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+        } +
+    role_name
+        {str(50):description}
+        @{REGEX:"^([A-Z0-9\s]{5,50})$";}
+        #{
+            LABEL:"Nombre del rol:";
+            COLUMN-LABEL:"Rol";
+            ALIAS:["Rol","Nombre del rol","Especialidad"];
+        }
+        ##{"Nombre del rol."}
+        !{
+            WUI.CONTROL-ORDER:2;
+            WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+            WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+        } +
+    legacy_role_code~
+        {int:description}
+        @{REGEX:"^([0-9]{4,6})$";}
+        #{
+            LABEL:"Código legado:";
+            COLUMN-LABEL:"Código";
+            ALIAS:["Código","Rol anterior","Clave anterior"];
+        }
+        ##{"Código de rol utilizado en el sistema
+           anterior (legado)."}
+        !{
+            WUI.CONTROL-ORDER:3;
+            WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+            WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+        };
+    #{
+        TITLE:"Catálogo de roles";
+        ALIAS:["Roles"];
+    }
+    ##{"Tabla de roles."}
+    !{
+        DESCRIPTION-FIELD:"role_name";
+        WUI.WINDOW-TYPE:"MODAL";
+        DGov.DATA-OWNER:"Dirección Administrativa";
+        DGov.DATA-STEWARD:"Recursos Humanos";
+        DGov.CLASSIFICATION:"Standard";
+        DGov.LAST-UPDATE:"2024-01-01";
+        DGov.DATA-QUALITY:"Standard";
+    };;
+
+ROLE_RATES->RR =
+    *pk_role_rates(
+            role_id
+                {&:[identity,reference]}
+                @{REGEX:"rolid";}
+                #{
+                    LABEL:"Rol a asignar la tarifa:";
+                    COLUMN-LABEL:"Rol";
+                    ALIAS:["Rol tarifado"];
+                }
+                ##{"Clave que identifica a un rol con una
+                   determinada tarifa en un periodo."}
+                !{
+                    WUI.CONTROL-ORDER:1;
+                    WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+                    WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+                } +
+    	    year_month
+                {&:[identity,reference]}
+                @{REGEX:"ymonth";}
+                #{
+                    LABEL:"Periodo en que se aplicará
+                        la tarifa:";
+                    COLUMN-LABEL:"Periodo";
+                    ALIAS:["Periodo tarifario"];
+                }
+                ##{"Clave que identifica al periodo en el
+                    que aplica la tarifa."}
+                !{
+                    WUI.CONTROL-ORDER:2;
+                    WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+                    WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+                }
+        ){:identity} +
+   	hourly_rate
+        {float(12,2):value}
+        @{
+            NON-NEGATIVE;
+            MIN-VALUE:150.00;
+            MAX-VALUE:4800.00;
+            REGEX:"money";
+        }
+        #{
+            LABEL:"Tarifa por hora:";
+            COLUMN-LABEL:"t/hr";
+            ALIAS:["Tarifa", "Tarifa por hora",
+                "Pago por hora"];
+        }
+        ##{"Tarifa por hora que aplica a un rol en un
+           determinado periodo."}
+        !{
+            WUI.CONTROL-ORDER:3;
+            WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+            WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+        } +
+    rol_periodo<CONCATENATE($ROL.role_name,"-",[year_month])>
+        {str(60):description}
+        #{
+            LABEL:"Tarifa:";
+            COLUMN-LABEL:"Tarifa";
+            ALIAS:["Descripción de la tarifa"];
+        }
+        ##{"Descripción legible de la tarifa, formada por
+           el nombre del rol y el periodo al que aplica."};
+    [role_id]* +
+    [year_month]*;
+    #{
+        TITLE:"Tarifas de rol";
+        ALIAS:["Tarifas","Pago por horas"];
+    }
+    ##{"Tabulador de tarifas pagadas por hora, por rol.
+        Las tarifas se especifican mensualmente."}
+    !{
+        DESCRIPTION-FIELD:"rol_periodo";
+        WUI.WINDOW-TYPE:"MODAL";
+        DGov.DATA-OWNER:"Dirección Administrativa";
+        DGov.DATA-STEWARD:"Contabilidad";
+        DGov.CLASSIFICATION:"Restricted";
+        DGov.LAST-UPDATE:"2024-01-01";
+        DGov.DATA-QUALITY:"Critical";
+        DGov.REGULATION:["GDPR","SOX"];
+    };;
+
+EMPLOYEES->EMP =
+        *employee_id
+            {str(10):identity}
+            @{REGEX:"empid";}
+            #{
+                LABEL:"Id del empleado:";
+                COLUMN-LABEL:"Id.";
+                ALIAS:["Id del empleado", "Clave de empleado"];
+            }
+            ##{"Clave que identifica al empleado."}
+            !{
+                WUI.CONTROL-ORDER:1;
+                WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+                WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+            } +
+        full_name
+            {str(100):description}
+            @{REGEX:"^([A-Z0-9\s\.]{5,100})$";}
+            #{
+                LABEL:"Nombre completo del empleado:";
+                COLUMN-LABEL:"Nombre";
+                ALIAS:["Empleado","Nombre del empleado"];
+            }
+            ##{"Nombre completo del empleado."}
+            !{
+                WUI.CONTROL-ORDER:2;
+                WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+                WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+            } +
+        hire_date
+            {date:temporal}
+            @{REGEX:DConv.REGEX("%Y-%m-%d");}
+            #{
+                LABEL:"Fecha de contratación:";
+                COLUMN-LABEL:"Contratación";
+                ALIAS:["Contratación","Ingreso","Alta"];
+            }
+            ##{"Fecha de contratación del empleado."}
+            !{
+                WUI.CONTROL-ORDER:3;
+                WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+                WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+            } +
+        termination_day^
+            {date:temporal}
+            @{REGEX:DConv.REGEX("%Y-%m-%d");}
+            #{
+                LABEL:"Fecha de salida:";
+                COLUMN-LABEL:"Salida";
+                ALIAS:["Salida","Baja"];
+            }
+            ##{"Fecha de salida o terminación de prestación
+                de servicios de un empleado."}
+            !{
+                WUI.CONTROL-ORDER:4;
+                WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+                WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+            } +
+        work_permit_number^~
+            {str(20):credential}
+            @{REGEX:"^[a-zA-Z]{3}\d{10}$";}
+            #{
+                LABEL:"Número de permiso de trabajo:";
+                COLUMN-LABEL:"USCIS";
+                ALIAS:["USCIS","EAD"];
+            }
+            ##{"Número de permiso de trabajo USCIS."}
+            !{
+                WUI.CONTROL-ORDER:5;
+                WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+                WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+            } +
+        passport_number^~
+            {str(20):credential}
+            @{REGEX:"^[A-Z][0-9]{8}$";}
+            #{
+                LABEL:"Número de pasaporte:";
+                COLUMN-LABEL:"Passaporte";
+                ALIAS:["Número de pasaporte","Pasaporte"];
+            }
+            ##{"Número de pasaporte."}
+            !{
+                WUI.CONTROL-ORDER:6;
+                WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+                WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+            } +
+        visa_type
+            {str(20):category}
+            @{ALLOWED-VALUES:["H-1B","L-1","TN"];}
+            #{
+                LABEL:"Tipo de visa:";
+                COLUMN-LABEL:"Visa";
+                ALIAS:["Visa","Tipo de visa"];
+            }
+            ##{"Tipo de visa."}
+            !{
+                WUI.CONTROL-ORDER:7;
+                WUI.INPUT-CONTROL-TYPE:"DROP-DOWN";
+                WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+            } +
+        manager_id
+            {&:reference}
+            @{REGEX:"empid";}
+            #{
+                LABEL:"Id del empleado del jefe directo:";
+                COLUMN-LABEL:"Id. Jefe";
+                ALIAS:["Jefe", "Superior"];
+            }
+            ##{"Clave que identifica al empleado a quien
+                debe reportarse jerárquicamente."}
+            !{
+                WUI.CONTROL-ORDER:8;
+                WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+                WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+            } +
+        position_id
+            {&:reference}
+            @{REGEX:"posid";}
+            #{
+                LABEL:"Id del puesto del empleado:";
+                COLUMN-LABEL:"Puesto";
+                ALIAS:["Puesto asignado", "Cargo"];
+            }
+            ##{"Clave que identifica al puesto que
+                tiene el empleado."}
+            !{
+                WUI.CONTROL-ORDER:9;
+                WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+                WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+            };
+    [manager_id]^*$EMPLOYEES.employee_id +
+    [position_id]*
+    ([work_permit_number] + [passport_number] + [visa_type])% +
+    @{IF(
+        [termination_day] NOT NULL,
+        [termination_day]>=[hire_date]);
+    }
+    #{
+        TITLE:"Empleados";
+        ALIAS:["Empleados","Colaboradores",
+            "Consultores"];
+    }
+    ##{"Catálogo de empleados de la compañía, que
+        atenderán los requerimientos de personal
+        especializado por parte de los clientes. Se incluye
+        información del jefe directo. Solo se podrá agregar
+        el empleado si se registra al menos un grado
+        universitario requerido."}
+    !{
+        DESCRIPTION-FIELD:"full_name";
+        WUI.WINDOW-TYPE:"MODAL";
+        DGov.DATA-OWNER:"Dirección Administrativa";
+        DGov.DATA-STEWARD:"Recursos Humanos";
+        DGov.CLASSIFICATION:"Restricted";
+        DGov.LAST-UPDATE:"2024-01-01";
+        DGov.DATA-QUALITY:"Critical";
+        DGov.REGULATION:["GDPR","SOX"];
+    };;
+
+EMPLOYEE_PERSONAL_DATA->EPD =
+    *employee_id
+        {&:[identity,reference]}
+        @{REGEX:"empid";}
+        #{
+            LABEL:"Id del empleado:";
+            COLUMN-LABEL:"Id.";
+            ALIAS:["Id datos personales"];
+        }
+        ##{"Clave que identifica al empleado a quien
+            pertenecen los datos personales."}
+        !{
+            WUI.CONTROL-ORDER:1;
+            WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+            WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+        } +
+    birth_date
+        {date:temporal}
+        @{REGEX:DConv.REGEX("%Y-%m-%d");}
+        #{
+            LABEL:"Fecha de nacimiento:";
+            COLUMN-LABEL:"Nacimiento";
+            ALIAS:["Fecha de nacimiento","Nacimiento"];
+        }
+        ##{"Fecha de nacimiento del empleado."}
+        !{
+            WUI.CONTROL-ORDER:2;
+            WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+            WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+        } +
+    gender
+        {str(30):category}
+        ##{"Género con el que se identifica el empleado."}
+        !{
+            WUI.CONTROL-ORDER:3;
+            WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+            WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+        } +
+    ethnic_group
+        {str(30):category}
+        ##{"Grupo étnico del empleado."}
+        !{
+            WUI.CONTROL-ORDER:4;
+            WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+            WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+        } +
+    religion
+        {str(30):category}
+        ##{"Religión del empleado."}
+        !{
+            WUI.CONTROL-ORDER:5;
+            WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+            WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+        };
+    [employee_id]*1$EMP.employee_id
+    #{
+        TITLE:"Datos personales del empleado";
+        ALIAS:["Datos personales",
+             "Información confidencial"];
+    }
+    ##{"Información personal y clasificada de los empleados
+        que han autorizado mantener dicha Información
+        en la compañía. Por motivo de la Ley de anterior
+        Discriminación, esta información no puede ser
+        requerida, pero sí puede ser otorgada
+        voluntariamente."}
+    !{
+        WUI.WINDOW-TYPE:"MODAL";
+        DGov.DATA-OWNER:"Dirección Administrativa";
+        DGov.DATA-STEWARD:"Recursos Humanos";
+        DGov.CLASSIFICATION:"Restricted";
+        DGov.LAST-UPDATE:"2024-01-01";
+        DGov.DATA-QUALITY:"Critical";
+    };;
+
+DEGREES =
+        *pk_degrees(
+            employee_id
+                {&:[identity,reference]}
+                @{REGEX:"empid";}
+                #{
+                    LABEL:"Id del empleado:";
+                    COLUMN-LABEL:"Id.";
+                    ALIAS:["Empleado con grado"];
+                }
+                ##{"Clave que identifica al empleado a quien
+                    pertenece el grado universitario
+                    reportado."}
+                !{
+                    WUI.CONTROL-ORDER:1;
+                    WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+                    WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+                } +
+            sequence
+                {int:identity}
+                @{REGEX:"^([0-9]{1,2})$";}
+                #{
+                    LABEL:"Número de grado reportado:";
+                    COLUMN-LABEL:"Num.";
+                    ALIAS:["Secuencia", "Secuencia de grado",
+                        "Orden de grado"];
+                }
+                ##{"Número secuencial que indica los estudios
+                    formales declarados por el empleado."}
+                !{
+                    WUI.CONTROL-ORDER:2;
+                    WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+                    WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+                }
+            ){:identity} +
+        degree_name
+            {str(50):description}
+            @{REGEX:"^([A-Z\s]{5,50})$";}
+            #{
+                LABEL:"Nombre del grado obtenido:";
+                COLUMN-LABEL:"Grado";
+                ALIAS:["Grado", "Título",
+                        "Carrera"];
+            }
+            ##{"Nombre del grado universitario obtenido."}
+            !{
+                WUI.CONTROL-ORDER:3;
+                WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+                WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+            } +
+        institution_name
+            {str(50):description}
+            @{REGEX:"^([A-Z\s]{5,50})$";}
+            #{
+                LABEL:"Nombre del la institución:";
+                COLUMN-LABEL:"Institución";
+                ALIAS:["Institución", "Universidad",
+                        "Escuela"];
+            }
+            ##{"Nombre del centro universitario que
+                otorgó el grado."}
+            !{
+                WUI.CONTROL-ORDER:4;
+                WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+                WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+            } +
+        earned_date
+            {date:temporal}
+            @{REGEX:DConv.REGEX("%Y-%m-%d");}
+            #{
+                LABEL:"Fecha de obtención de grado:";
+                COLUMN-LABEL:"Obtención";
+                ALIAS:["Fecha de titulación",
+                    "Fecha de obtención de grado"];
+            }
+            ##{"Fecha de obtención del grado universitario,
+                inscrita en la documentación comprobatoria."}
+            !{
+                WUI.CONTROL-ORDER:5;
+                WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+                WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+            } +
+        degree_type
+            {str(20):category}
+            @{
+                ALLOWED-VALUES:
+                ["BACHELOR","MASTER","DOCTORATE"];
+            }
+            #{
+                LABEL:"Tipo de grado obtenido:";
+                COLUMN-LABEL:"Tipo";
+                ALIAS:["Tipo de grado",
+                    "Nivel de estudios"];
+            }
+            ##{"Tipo o nivel de estudio obtenido. Nivel
+                de especialidad."}
+            !{
+                WUI.CONTROL-ORDER:6;
+                WUI.INPUT-CONTROL-TYPE:"DROP-DOWN";
+                WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+            };
+    [employee_id]*+$EMP.employee_id
+    #{
+        TITLE:"Grados universitarios";
+        ALIAS:["Grados","Titulos","Carreras"];
+    }
+    ##{"Grados universitarios que posee un empleado. Por
+        política de la compañía, todos los empleados deben
+        tener al menos un grado universitario para poder
+        desempeñarse como consultores especializados."}
+    !{
+        DESCRIPTION-FIELD:"degree_name";
+        WUI.WINDOW-TYPE:"MODAL";
+        DGov.DATA-OWNER:"Dirección Administrativa";
+        DGov.DATA-STEWARD:"Gestión de Talento";
+        DGov.CLASSIFICATION:"Standard";
+        DGov.LAST-UPDATE:"2024-01-01";
+        DGov.DATA-QUALITY:"Standard";
+    };;
+
+EMPLOYEE_ROLES->ER =
+    	*pk_employee_roles(
+            employee_id
+                {&:[identity,reference]}
+                @{REGEX:"empid";}
+                #{
+                    LABEL:"Empleado que desempeña el rol:";
+                    COLUMN-LABEL:"Empleado";
+                    ALIAS:["Empleado habilitado",
+                        "Empleado calificado"];
+                }
+                ##{"Empleado que puede desempeñar un rol."}
+                !{
+                    WUI.CONTROL-ORDER:1;
+                    WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+                    WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+                } +
+    	    role_id
+                {&:[identity,reference]}
+                @{REGEX:"rolid";}
+                #{
+                    LABEL:"Id del rol que puede desempeñar:";
+                    COLUMN-LABEL:"Rol";
+                    ALIAS:["Habilidad", "Calificación",
+                            "Rol habilitado"];
+                }
+                ##{"Id del rol que el empleado puede desempeñar,
+                    de acuerdo a sus calificaciones."}
+                !{
+                    WUI.CONTROL-ORDER:2;
+                    WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+                    WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+                } +
+        ){:identity} +
+    	effective_start_date
+            {date:temporal}
+            @{REGEX:DConv.REGEX("%Y-%m-%d");}
+            #{
+                LABEL:"Fecha de inicio de vigencia del rol:";
+                COLUMN-LABEL:"Desde";
+                ALIAS:["Fecha disponibilidad",
+                    "Inicio de vigencia de rol"];
+            }
+            ##{"Fecha a partir de la cual el empleado
+                puede ser asignado para desempeñar el rol.
+                Inicio de vigencia."}
+            !{
+                WUI.CONTROL-ORDER:3;
+                WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+                WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+            } +
+    	effective_end_date^
+            {date:temporal}
+            @{REGEX:DConv.REGEX("%Y-%m-%d");}
+            #{
+                LABEL:"Fecha de fin de vigencia del rol:";
+                COLUMN-LABEL:"Hasta";
+                ALIAS:["Fecha de fin de disponibilidad",
+                    "Fecha de fin de vigencia de rol"];
+            }
+            ##{"Fecha en que concluye la vigencia del rol
+                para el empleado."}
+            !{
+                WUI.CONTROL-ORDER:4;
+                WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+                WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+            } +
+        rol_asignable<CONCATENATE([employee_id],"-",$ROL.role_name)>
+            {str(70):description};
+	[employee_id]*$EMP.employee_id +
+	[role_id]*;
+    @{
+        IF(
+            [effective_end_date] NOT NULL,
+            [effective_end_date]>=[effective_start_date]
+        );
+    }
+    #{
+        TITLE:"Roles del empleado";
+        ALIAS:["Roles asignables","Roles vigentes",
+            "Capacidades profesionales"];
+    }
+    ##{"Tabla de relación que permite conocer qué roles
+        pueden desempeñar los empleados. Si un empleado
+        tiene registrado un rol asociado en esta tabla,
+        podrá ser asignado para cubrir dicho rol con los
+        clientes."}
+    !{
+        DESCRIPTION-FIELD:"rol_asignable";
+        WUI.WINDOW-TYPE:"MODAL";
+        DGov.DATA-OWNER:"Dirección Administrativa";
+        DGov.DATA-STEWARD:"Gestión de Talento";
+        DGov.CLASSIFICATION:"Standard";
+        DGov.LAST-UPDATE:"2024-01-01";
+        DGov.DATA-QUALITY:"Standard";
+    };;
+
+CERTIFICATIONS =
+        *certification_id
+            {str(18):identity}
+            @{REGEX:"^((ADM|TEC|OPE)\-[A-Z0-9]{14})$";}
+            #{
+                LABEL:"Id interno de certificación:";
+                COLUMN-LABEL:"Id.";
+                ALIAS:["Id de certificación",
+                    "Clave de certificación"];
+            }
+            ##{"Clave interna otorgada a una certificación
+                validada, que permite o fortalece elç
+                desempeño de un rol especializado."}
+            !{
+                WUI.CONTROL-ORDER:1;
+                WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+                WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+            } +
+        issue_date
+            {date:temporal}
+            @{REGEX:DConv.REGEX("%Y-%m-%d");}
+            #{
+                LABEL:"Fecha de obtención de certificación:";
+                COLUMN-LABEL:"Obtención";
+                ALIAS:["Fecha de certificación",
+                    "Fecha de acreditación"];
+            }
+            ##{"Fecha de obtención de la certificación,
+                inscrita en la documentación comprobatoria."}
+            !{
+                WUI.CONTROL-ORDER:2;
+                WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+                WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+            } +
+        certification_name
+            {str(50):description}
+            @{REGEX:"^([A-Z\s]{5,50})$";}
+            #{
+                LABEL:"Nombre del la certificación:";
+                COLUMN-LABEL:"Certificación";
+                ALIAS:["Certificación", "Acreditación",
+                        "Credencial"];
+            }
+            ##{"Nombre de la certificación o programa que el
+                empleado ha demostrado acreditar."}
+            !{
+                WUI.CONTROL-ORDER:3;
+                WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+                WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+            } +
+        issuing_organization
+            {str(50):description}
+            @{REGEX:"^([A-Z\s]{5,50})$";}
+            #{
+                LABEL:"Nombre del certificador:";
+                COLUMN-LABEL:"Certificador";
+                ALIAS:["Certificador", "Evaluador",
+                        "Autoridad certificadora"];
+            }
+            ##{"Nombre de la organización o Autoridad
+                certificadora."}
+            !{
+                WUI.CONTROL-ORDER:4;
+                WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+                WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+            } +
+        employee_id
+            {int:reference}
+            @{REGEX:"empid";}
+            #{
+                LABEL:"Id del empleado certificado:";
+                COLUMN-LABEL:"Empleado";
+                ALIAS:["Id empleado certificado"];
+            }
+            ##{"Id del empleado que ha demostrado haber
+                acreditado un programa de certificación."}
+            !{
+                WUI.CONTROL-ORDER:5;
+                WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+                WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+            } +
+        role_id
+            {str(10):reference}
+            @{REGEX:"rolid";}
+            #{
+                LABEL:"Id del rol que requiere la certificación:";
+                COLUMN-LABEL:"Rol";
+                ALIAS:["Rol que requiere ceritificación"];
+            }
+            ##{"Id del rol que requiere la certificación para
+                poder recibir asignaciones."}
+            !{
+                WUI.CONTROL-ORDER:6;
+                WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+                WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+            } +
+        fk_employee_roles(
+            [employee_id]$ER.employee_id +
+            [role_id]$ER.role_id
+        );
+	[fk_employee_roles]*?$ER.pk_employee_roles
+    #{
+        TITLE:"Certificaciones";
+        ALIAS:["Certificaciones","Acreditaciones",
+             "Credenciales"];
+    }
+    ##{"Certificaciones o acreditaciones que los empleados
+        pueden requerir para poder atender asignaciones
+        de roles que las exigen, por temas legales o de
+        calidad. Aunque su razón de ser es autorizar o
+        acreditar un empleado para un rol, es frecuente
+        que requieran obtenerse antes de habilitar el
+        rol para el empleado, por lo cual puede registrarse
+        para un rol habilitado que aun no existe."}
+    !{
+        DESCRIPTION-FIELD:"certification_name";
+        WUI.WINDOW-TYPE:"MODAL";
+        DGov.DATA-OWNER:"Dirección Administrativa";
+        DGov.DATA-STEWARD:"Gestión de Talento";
+        DGov.CLASSIFICATION:"Standard";
+        DGov.LAST-UPDATE:"2024-01-01";
+        DGov.DATA-QUALITY:"Standard";
+    };;
+
+INDUSTRIES =
+	    *industry_id
+            {int:identity}
+            @{REGEX:"^([0-9][1,3])$";}
+            #{
+                LABEL:"Id de la industria:";
+                COLUMN-LABEL:"Id.";
+                ALIAS:["Id del Sector","Id de la Industria",
+                    "Id del Mercado"];
+            }
+            ##{"Clave que identifica a la industria donde
+                pueden pertenecer los clientes."}
+            !{
+                WUI.CONTROL-ORDER:1;
+                WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+                WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+            } +
+        industry_name
+            {str(30):description}
+            @{REGEX:"^([A-Z\s]{5,30})$";}
+            #{
+                LABEL:"Nombre de la industria:";
+                COLUMN-LABEL:"Industria";
+                ALIAS:["Nombre de la industria",
+                    "Nombre del sector"];
+            }
+            ##{"Nombre de la industria donde pueden
+                pertenecer los clientes."}
+            !{
+                WUI.CONTROL-ORDER:2;
+                WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+                WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+            };
+    #{
+        TITLE:"Industrias";
+        ALIAS:["Industrias","Sectores","Mercados"];
+    }
+    ##{"Catálogo de industrias / sectores a los
+        que pueden pertenecer los clientes."}
+    !{
+        DESCRIPTION-FIELD:"industry_name";
+        WUI.WINDOW-TYPE:"MODAL";
+        DGov.DATA-OWNER:"Dirección Administrativa";
+        DGov.DATA-STEWARD:"Comercial";
+        DGov.CLASSIFICATION:"Standard";
+        DGov.LAST-UPDATE:"2024-01-01";
+        DGov.DATA-QUALITY:"Standard";
+    };;
+
+CUSTOMERS =
+        *customer_id
+            {int:identity}
+            @{REGEX:"^([0-9]{3,7})$";}
+            #{
+                LABEL:"Id del cliente:";
+                COLUMN-LABEL:"Id.";
+                ALIAS:["Id del cliente", "Clave del cliente"];
+            }
+            ##{"Clave que identifica al cliente."}
+            !{
+                WUI.CONTROL-ORDER:1;
+                WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+                WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+            } +
+        customer_name^
+            {str(60):description}
+            @{REGEX:"^([A-Z\s]{5,60})$";}
+            #{
+                LABEL:"Nombre del cliente:";
+                COLUMN-LABEL:"Cliente";
+                ALIAS:["Nombre comercial", "Socio"];
+            }
+            ##{"Nombre comercial / fiscal del cliente."}
+            !{
+                WUI.CONTROL-ORDER:2;
+                WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+                WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+            } +
+        customer_address^
+            {str(60):description}
+            @{REGEX:"^([A-Z\s]{5,60})$";}
+            #{
+                LABEL:"Domicilio del cliente:";
+                COLUMN-LABEL:"Domicilio";
+                ALIAS:["Domicilio del cliente",
+                    "Domicilio fiscal","Domicilio"];
+            }
+            ##{"Domicilio fiscal del cliente."}
+            !{
+                WUI.CONTROL-ORDER:3;
+                WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+                WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+            } +
+        contact_name^
+            {str(50):description}
+            @{REGEX:"^([A-Z\s]{5,50})$";}
+            #{
+                LABEL:"Nombre del contacto:";
+                COLUMN-LABEL:"Contacto";
+                ALIAS:["Nombre del contacto", "Contacto",
+                    "Representante"];
+            }
+            ##{"Nombre del contacto comercial que
+                representa al cliente."}
+            !{
+                WUI.CONTROL-ORDER:4;
+                WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+                WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+            } +
+        contact_phone^
+            {str(15):description}
+            @{REGEX:"^(\+?\d{1,3}[-.\s]?)?\(?\d{3,4}\)?
+                [-.\s]?\d{3,4}[-.\s]?\d{3,9}$";}
+            #{
+                LABEL:"Teléfono del contacto:";
+                COLUMN-LABEL:"Teléfono",
+                ALIAS:["Teléfono del contacto", "Móvil"];
+            }
+            ##{"Teléfono del contacto comercial."}
+            !{
+                WUI.CONTROL-ORDER:5;
+                WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+                WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+            } +
+        contact_email^
+            {str(50):description}
+            @{REGEX:"email";}
+            #{
+                LABEL:"Correo electrónico del contacto:";
+                COLUMN-LABEL:"Correo",
+                ALIAS:["Correo del contacto"];
+            }
+            ##{"Correo del contacto comercial."}
+            !{
+                WUI.CONTROL-ORDER:6;
+                WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+                WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+            } +
+        industry_id
+            {&:reference}
+            @{REGEX:"^([0-9][1,3])$";}
+            #{
+                LABEL:"Id de la industria:";
+                COLUMN-LABEL:"Id.";
+                ALIAS:["Industria del cliente",
+                     "Sector del cliente"];
+            }
+            ##{"Clave que identifica al sector o industria
+                a la que pertence el cliente."}
+            !{
+                WUI.CONTROL-ORDER:7;
+                WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+                WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+            };
+    [industry_id]* +
+	([customer_name] + [contact_name])%+1 +
+	([contact_phone] + [contact_email])%+1 +
+    @{
+        IF([customer_name] NOT NULL AND
+           [contact_name] NOT NULL,
+            [customer_name] <> [contact_name])
+    }
+    #{
+        TITLE:"Clientes";
+        ALIAS:["Clientes","Asociados","Contratantes"];
+    }
+    ##{"Catálogo de clientes de la organización, con
+        segmentación por industria / sector."}
+    !{
+        DESCRIPTION-FIELD:"customer_name";
+        WUI.WINDOW-TYPE:"MODAL";
+        DGov.DATA-OWNER:"Dirección Administrativa";
+        DGov.DATA-STEWARD:"Comercial";
+        DGov.CLASSIFICATION:"Restricted";
+        DGov.LAST-UPDATE:"2024-01-01";
+        DGov.DATA-QUALITY:"Critical";
+    };;
+
+ASSIGNMENTS =
+        *assignment_id
+            {int:identity}
+            @{REGEX:"^([0-9]{1,7})$";}
+            #{
+                LABEL:"Id de asignación:";
+                COLUMN-LABEL:"Id.";
+                ALIAS:["Id de asignación", "Asignación"];
+            }
+            ##{"Clave que identifica la asignación de un
+                empleado para que desempeñe un rol por
+                petición de servicios profesionales de
+                un cliente."}
+            !{
+                WUI.CONTROL-ORDER:1;
+                WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+                WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+            } +
+        employee_id
+            {int:reference}
+            @{REGEX:"empid";}
+            #{
+                LABEL:"Id de empleado asignado:";
+                COLUMN-LABEL:"Empleado";
+                ALIAS:["Id empleado asignado",
+                    "Experto asignado"];
+            }
+            ##{"Clave que identifica al empleado habilitado
+                que es asignado para desempeñar un rol
+                con un cliente."}
+            !{
+                WUI.CONTROL-ORDER:2;
+                WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+                WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+            } +
+        role_id
+            {str(10):reference}
+            @{REGEX:"rolid";}
+            #{
+                LABEL:"Id del rol a asignar:";
+                COLUMN-LABEL:"Rol";
+                ALIAS:["Id del rol asignado",
+                    "Clave del rol asignado"];
+            }
+            ##{"Clave que identifica al rol habilitado
+                al cual es asignado un empleado."}
+            !{
+                WUI.CONTROL-ORDER:3;
+                WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+                WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+            } +
+        year_month
+            {str(7):reference}
+            @{REGEX:"ymonth";}
+            #{
+                LABEL:"Periodo en que ocurre la asignación:";
+                COLUMN-LABEL:"Periodo";
+                ALIAS:["Periodo de asignación"];
+            }
+            ##{"Clave que identifica al periodo en que el
+                empleado habilitado es asignado para
+                desempeñar el rol."}
+            !{
+                WUI.CONTROL-ORDER:4;
+                WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+                WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+            } +
+        hours_worked
+            {float(4,1):value}
+            @{REGEX:"^([0-9]{1,3}([\.[0-9]{1}])?)$";}
+            #{
+                LABEL:"Horas trabajadas:";
+                COLUMN-LABEL:"WH";
+                ALIAS:["Horas trabajadas", "Horas"];
+            }
+            ##{"Cantidad de horas desempeñadas en la
+                asignación. Este campo determina en generan
+                medida los montos pagados por el cliente."}
+            !{
+                WUI.CONTROL-ORDER:5;
+                WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+                WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+            } +
+        customer_id
+            {&:reference}
+            @{REGEX:"^([0-9]{3,7})$";}
+            #{
+                LABEL:"Cliente de la asignación:";
+                COLUMN-LABEL:"Cliente";
+                ALIAS:["Cliente de la asignación"];
+            }
+            ##{"Clave que identifica al cliente que solicitó
+                los servicios, y a quien se le asignó un
+                empleado para desempeñar el rol."}
+            !{
+                WUI.CONTROL-ORDER:6;
+                WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+                WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+            } +
+        earned_amount<[hours_worked]*$RR.hourly_rate>
+            {float(12,2):value}
+            #{
+                LABEL:"Ingresos por la asignación:";
+                COLUMN-LABEL:"Ingresos";
+                ALIAS:["Ingreso por asignación",
+                    "Pago por asignación"];
+            }
+            ##{"Monto calculado, correspondiente al pago
+                de la asignación. Se multiplican las horas
+                trabajadas por la tarifa del rol en el periodo."}
+            !{
+                WUI.CONTROL-ORDER:7;
+                WUI.INPUT-CONTROL-TYPE:"TEXTBOX";
+                WUI.DISPLAY-CONTROL-TYPE:"LABEL";
+            } +
+        fk_employee_roles(
+            [employee_id] +
+            [role_id]
+        ) +
+        fk_role_rates(
+            [role_id] +
+            [year_month]
+        );
+    [customer_id]* +
+    [fk_employee_roles]*$ER.pk_employee_roles +
+    [fk_role_rates]*$RR.pk_role_rates
+    #{
+        TITLE:"Asignaciones";
+        ALIAS:["Asignaciones","Contrataciones",
+            "Servicios"];
+    }
+    ##{"Asignaciones de trabajo realizadas a solicitud
+       de los clientes. Desempeño de un empleado en un
+       rol, en un periodo establecido. El número de
+       horas trabajadas da origen a los ingresos de los
+       colaboradores."
+    }
+    !{
+        WUI.WINDOW-TYPE:"MODAL";
+        DGov.DATA-OWNER:"Dirección Administrativa";
+        DGov.DATA-STEWARD:"Operaciones";
+        DGov.CLASSIFICATION:"Standard";
+        DGov.LAST-UPDATE:"2024-01-01";
+        DGov.DATA-QUALITY:"Standard";
+    };;
+

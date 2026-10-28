@@ -1,0 +1,51 @@
+﻿customer_id,customer_name,customer_address,contact_name,contact_phone,contact_email,industry_id
+C001,BLUEWAVE FABRICATION,Address 1,Robert Thomas,811000001,contact1@mail.com,1
+C002,NORTH DIGITAL,Address 2,Linda Martin,811000002,contact2@mail.com,10
+C003,VERTEX ENERGY,,David Thomas,811000003,,6
+C004,PIONEER FREIGHT,Address 4,David Jackson,,contact4@mail.com,7
+C005,SILVERLINE INSTITUTE,Address 5,James Jackson,811000005,,5
+C006,SILVERLINE BANK,Address 6,Anna Jackson,811000006,contact6@mail.com,2
+C007,GLOBAL NETWORKS,,Anna Jackson,811000007,contact7@mail.com,8
+C008,VERTEX FABRICATION,,Sofia Taylor,811000008,contact8@mail.com,1
+C009,QUANTUM AUTHORITY,Address 9,Emily Anderson,,contact9@mail.com,9
+C010,BLUEWAVE RETAIL,Address 10,Emily Taylor,811000010,contact10@mail.com,3
+C011,PIONEER MANUFACTURING,Address 11,David Thomas,811000011,contact11@mail.com,1
+C012,PIONEER BANK,Address 12,Emily Martin,,contact12@mail.com,2
+C013,PIONEER ACADEMY,Address 13,Robert Taylor,811000013,contact13@mail.com,5
+C014,SUMMIT ENERGY,Address 14,Daniel Thomas,811000014,contact14@mail.com,6
+C015,CORE HEALTH,,Michael Martin,,contact15@mail.com,4
+C016,NORTH NETWORKS,Address 16,Robert Jackson,811000016,contact16@mail.com,8
+C017,CORE MANUFACTURING,Address 17,Daniel Johnson,811000017,contact17@mail.com,1
+C018,NOVA CARE SYSTEMS,Address 18,Michael Anderson,811000018,,4
+C019,REDROCK INSTITUTE,,John Thomas,811000019,contact19@mail.com,5
+C020,VERTEX TELECOM,Address 20,James Jackson,,contact20@mail.com,8
+C021,SKYLINE DIGITAL,Address 21,Daniel Martin,811000021,contact21@mail.com,10
+C022,NEXTGEN ACADEMY,Address 22,Daniel Smith,,contact22@mail.com,5
+C023,REDROCK ENERGY,Address 23,Daniel Jackson,,contact23@mail.com,6
+C024,QUANTUM CARE SYSTEMS,Address 24,Michael Brown,811000024,,4
+C025,ATLAS INSTITUTE,Address 25,Anna Johnson,811000025,contact25@mail.com,5
+C026,VERTEX STORES,Address 26,Sofia Smith,811000026,contact26@mail.com,3
+C027,REDROCK RESOURCES,Address 27,John Thomas,,contact27@mail.com,6
+C028,IRONGATE MEDICAL CENTER,Address 28,Daniel Anderson,,contact28@mail.com,4
+C029,ORION MARKET GROUP,,John Smith,811000029,contact29@mail.com,3
+C030,NORTH ADMINISTRATION,Address 30,Sofia Jackson,811000030,contact30@mail.com,9
+C031,VERTEX FINANCIAL GROUP,Address 31,Robert Smith,,contact31@mail.com,2
+C032,QUANTUM INSTITUTE,Address 32,David Brown,811000032,contact32@mail.com,5
+C033,PRIME FREIGHT,Address 33,Sofia Harris,811000033,,7
+C034,ATLAS FREIGHT,,Laura Thomas,811000034,,7
+C035,CORE INVESTMENTS,Address 35,Michael Jackson,811000035,contact35@mail.com,2
+C036,PRIME FINANCIAL GROUP,Address 36,Sofia Anderson,811000036,,2
+C037,GREENFIELD MEDICAL CENTER,Address 37,Linda Anderson,811000037,,4
+C038,CORE UNIVERSITY,Address 38,Linda Harris,811000038,,5
+C039,PRIME MANUFACTURING,Address 39,Emily Anderson,,contact39@mail.com,1
+C040,NOVA AUTHORITY,Address 40,Sofia Harris,,contact40@mail.com,9
+C041,BLUEWAVE COMMUNICATIONS,Address 41,Laura Anderson,811000041,contact41@mail.com,8
+C042,APEX FINANCIAL GROUP,Address 42,Daniel Johnson,811000042,contact42@mail.com,2
+C043,APEX PUBLIC SERVICES,Address 43,Sofia Jackson,811000043,,9
+C044,GREENFIELD ADMINISTRATION,,David Smith,811000044,,9
+C045,SKYLINE ACADEMY,,Emily Martin,811000045,contact45@mail.com,5
+C046,PIONEER UNIVERSITY,Address 46,James Taylor,811000046,contact46@mail.com,5
+C047,IRONGATE INSTITUTE,Address 47,Emily Jackson,811000047,contact47@mail.com,5
+C048,NEXTGEN ENERGY,,Emily Taylor,,contact48@mail.com,6
+C049,SUMMIT EDUCATION GROUP,Address 49,Sarah Harris,,contact49@mail.com,5
+C050,SUMMIT MANUFACTURING,,Laura Taylor,811000050,contact50@mail.com,1
